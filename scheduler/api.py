@@ -5,6 +5,7 @@ app = Flask(__name__)
 redis = Redis(host='redis', port=6379)
 
 root = "/api/1.0"
+import json
 
 
 ### Health Checks
@@ -24,7 +25,9 @@ def events():
     if request.method == "GET":
         return "Event: List"
     elif request.method == "POST":
-        return "Event: List"
+        body = json.loads(request.get_data())
+        for body_event in body["events"]:
+            redis.set("event-" + body_event["id"], body_event)
     else:
         return {}, 400
 
@@ -48,7 +51,9 @@ def rotas():
     if request.method == "GET":
         return "Rota: List"
     elif request.method == "POST":
-        return "Rota: List"
+        body = json.loads(request.get_data())
+        for body_rota in body["rotas"]:
+            redis.set("rota-" + body_rota["id"], body_rota)
     else:
         return {}, 400
 
@@ -72,7 +77,9 @@ def people():
     if request.method == "GET":
         return "Person: List"
     elif request.method == "POST":
-        return "Person: List"
+        body = json.loads(request.get_data())
+        for body_person in body["people"]:
+            redis.set("person-" + body_person["id"], body_person)
     else:
         return {}, 400
 
