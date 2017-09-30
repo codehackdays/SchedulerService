@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from redis import Redis
 
 app = Flask(__name__)
@@ -28,8 +28,9 @@ def events():
         body = json.loads(request.get_data())
         for body_event in body["events"]:
             redis.set("event-" + body_event["id"], body_event)
+        return Response("OK", status=200)
     else:
-        return {}, 400
+        return Response("Invalid Method", status=400)
 
 
 # ONE
@@ -39,8 +40,9 @@ def event(id):
         return redis.get("event-" + id)
     elif request.method == "POST":
         redis.set("event-" + id, request.get_data())
+        return Response("OK", status=200)
     else:
-        return {}, 400
+        return Response("Invalid Method", status=400)
 
 
 ### Rotas
@@ -54,8 +56,9 @@ def rotas():
         body = json.loads(request.get_data())
         for body_rota in body["rotas"]:
             redis.set("rota-" + body_rota["id"], body_rota)
+        return Response("OK", status=200)
     else:
-        return {}, 400
+        return Response("Invalid Method", status=400)
 
 
 # ONE
@@ -65,8 +68,9 @@ def rota(id):
         return redis.get("rota-" + id)
     elif request.method == "POST":
         redis.set("rota-" + id, request.get_data())
+        return Response("OK", status=200)
     else:
-        return {}, 400
+        return Response("Invalid Method", status=400)
 
 
 ### People
@@ -80,8 +84,9 @@ def people():
         body = json.loads(request.get_data())
         for body_person in body["people"]:
             redis.set("person-" + body_person["id"], body_person)
+        return Response("OK", status=200)
     else:
-        return {}, 400
+        return Response("Invalid Method", status=400)
 
 
 # ONE
@@ -91,5 +96,6 @@ def person(id):
         return redis.get("person-" + id)
     elif request.method == "POST":
         redis.set("person-" + id, request.get_data())
+        return Response("OK", status=200)
     else:
-        return {}, 400
+        return Response("Invalid Method", status=400)
