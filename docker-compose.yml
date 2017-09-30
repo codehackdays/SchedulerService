@@ -1,0 +1,13 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+    - "5000:5000"
+    environment:
+      FLASK_APP: scheduler.api
+      FLASK_DEBUG: 1
+      PYTHONPATH: .
+    volumes: ['.:/usr/src/app']
+  redis:
+    image: "redis:alpine"
