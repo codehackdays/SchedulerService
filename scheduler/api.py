@@ -199,6 +199,46 @@ def google_sheets_subsheets_import(id, subsheet_id, http_auth):
     values = [[cell.get('formattedValue') for cell in row['values']]
               for row in row_data]
 
-    # Import code here!
+    ###
+    def prepare_for_service(values):
+        body = json.dumps({
+            "events": parse_values(values)
+        })
+        h = httplib2.Http('.cache')
+        (resp, content) = h.request(
+            'https://a472d6c9.ngrok.io/api/1.0/events',
+            'POST',
+            body=body
+        )
+        return content
 
-    return json.dumps(values)
+    def parse_values(values):
+        """
+        Parses results from google sheets
+        and creates a json object
+        """
+        events = []
+        rota_names = []
+        for index, row in enumerate(values):
+            if index == 0:
+                rota_names = row[2:]
+            if index > 1:
+                events.append({
+                    "id": str(uuid.uuid4()),
+                    "name": row[1],
+                    "start": row[0],
+                    "rotas": map_names_to_rotas(row[2:], rota_names)
+                })
+        return events
+
+    def map_names_to_rotas(names, rota_names):
+        rotas = []
+        for index, name in enumerate(names):
+            rotas.append({
+                "name": rota_names[index],
+                "people": list(map(lambda x: x.strip(), name.split(',')))
+            })
+        return rotas
+
+
+    return prepare_for_service(values)
