@@ -290,7 +290,7 @@ def google_calendar_upsert(id, http_auth):
 
         # Get Event Ids in Calendar which match something
         try:
-            response = service.events().get(calendarId=id, eventId=event_id).execute()
+            service.events().get(calendarId=id, eventId=event_id).execute()
             event_found = True
         except googleapiclient.errors.HttpError as e:
             if e.resp['status'] != '404':
