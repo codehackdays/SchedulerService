@@ -2,6 +2,7 @@ from flask import Flask, request, Response
 from redis import Redis
 from oauth2client import client
 from apiclient import discovery
+import googleapiclient
 import functools
 import flask
 import json
@@ -121,7 +122,7 @@ def person(id):
         return Response("Invalid Method", status=400)
 
 
-### Adapter: google_sheet
+### Adapter: google
 
 google_root = '/google/1.0'
 
@@ -149,7 +150,8 @@ def google_oauth2():
     flow = client.flow_from_clientsecrets(
         'client_secrets.json',
         scope=('https://www.googleapis.com/auth/spreadsheets.readonly'
-               ' https://www.googleapis.com/auth/drive.metadata.readonly'),
+               ' https://www.googleapis.com/auth/drive.metadata.readonly'
+               ' https://www.googleapis.com/auth/calendar'),
         redirect_uri=flask.url_for('google_oauth2', _external=True))
 
     if 'code' not in request.args:
@@ -165,6 +167,8 @@ def google_oauth2():
         # Finished - go to the target URL
         return flask.redirect(flask.session['google_oauth2_redirect'])
 
+
+### Adapter: google_sheet
 
 @app.route(google_root + '/sheets')
 @with_google_auth
@@ -255,3 +259,60 @@ def google_sheets_subsheets_import(id, subsheet_id, http_auth):
 
 
     return prepare_for_service(values)
+
+
+### Adapter: google_calendar
+
+@app.route(google_root + '/calendars')
+@with_google_auth
+def google_calendars(http_auth):
+    service = discovery.build('calendar', 'v3', http=http_auth)
+
+    response = service.calendarList().list().execute()
+
+    return json.dumps(
+        [dict(id=x['id'], summary=x['summary'], description=x.get('description'))
+         for x in response['items']]
+    )
+
+@app.route(google_root + '/calendar/<id>/upsert')
+@with_google_auth
+def google_calendar_upsert(id, http_auth):
+    service = discovery.build('calendar', 'v3', http=http_auth)
+
+    # TODO: temporary
+    h = httplib2.Http('.cache')
+    (resp, content) = h.request(
+        'https://a472d6c9.ngrok.io/api/1.0/events', 'GET'
+    )
+    events = json.loads(content.decode('utf-8'))
+
+    for event in events:
+        event_id = event['id'].replace('-', '')
+
+        # Get Event Ids in Calendar which match something
+        try:
+            response = service.events().get(calendarId=id, eventId=event_id).execute()
+            event_found = True
+        except googleapiclient.errors.HttpError as e:
+            if e.resp['status'] != '404':
+                raise e
+            event_found = False
+
+        description = '\n'.join(
+            '%s: %s' % (rota['name'], ', '.join(rota['people']))
+            for rota in event['rotas']
+        )
+        body = dict(
+            id=event_id,
+            summary=event['name'],
+            start=dict(date=event['start']),
+            end=dict(date=event['start']),
+            description=description,
+        )
+        if event_found:
+            service.events().update(calendarId=id, eventId=event_id, body=body).execute()
+        else:
+            service.events().insert(calendarId=id, body=body).execute()
+    return Response("OK", status=200)
+
