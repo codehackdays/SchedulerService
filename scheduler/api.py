@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from redis import Redis
 
 app = Flask(__name__)
@@ -7,43 +7,82 @@ redis = Redis(host='redis', port=6379)
 root = "/api/1.0"
 
 
+### Health Checks
+
+# PING
 @app.route('/')
-def hello():
+def ping():
     count = redis.incr('hits')
     return 'Hello World! I have been seen {} times.\n'.format(count)
 
 
-#GET ALL
-@app.route(root + "/events")
+### Events
+
+# ALL
+@app.route(root + "/events", methods=["GET", "POST"])
 def events():
-    return "Event: List"
+    if request.method == "GET":
+        return "Event: List"
+    elif request.method == "POST":
+        return "Event: List"
+    else:
+        return {}, 400
 
 
-#GET ONE
-@app.route(root + "/events/<id>")
+# ONE
+@app.route(root + "/events/<id>", methods=["GET", "POST"])
 def event(id):
-    return "Event: " + id
+    if request.method == "GET":
+        return "Event: " + id
+    elif request.method == "POST":
+        return "Event: " + id
+    else:
+        return {}, 400
 
 
-#GET ALL
-@app.route(root + "/rotas")
+### Rotas
+
+# ALL
+@app.route(root + "/rotas", methods=["GET", "POST"])
 def rotas():
-    return "Rota: List"
+    if request.method == "GET":
+        return "Rota: List"
+    elif request.method == "POST":
+        return "Rota: List"
+    else:
+        return {}, 400
 
 
-#GET ONE
-@app.route(root + "/rotas/<id>")
+# ONE
+@app.route(root + "/rotas/<id>", methods=["GET", "POST"])
 def rota(id):
-    return "Rota: " + id
+    if request.method == "GET":
+        return "Rota: " + id
+    elif request.method == "POST":
+        return "Rota: " + id
+    else:
+        return {}, 400
 
 
-#GET ALL
-@app.route(root + "/people")
+### People
+
+# ALL
+@app.route(root + "/people", methods=["GET", "POST"])
 def people():
-    return "Person: List"
+    if request.method == "GET":
+        return "Person: List"
+    elif request.method == "POST":
+        return "Person: List"
+    else:
+        return {}, 400
 
 
-#GET ONE
-@app.route(root + "/people/<id>")
+# ONE
+@app.route(root + "/people/<id>", methods=["GET", "POST"])
 def person(id):
-    return "Person: " + id
+    if request.method == "GET":
+        return "Person: " + id
+    elif request.method == "POST":
+        return "Person: " + id
+    else:
+        return {}, 400
