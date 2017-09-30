@@ -1,4 +1,6 @@
 flake8
 flask
+google-api-python-client
+oauth2client
 pytest
 redis
