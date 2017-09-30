@@ -33,9 +33,9 @@ def events():
 @app.route(root + "/events/<id>", methods=["GET", "POST"])
 def event(id):
     if request.method == "GET":
-        return "Event: " + id
+        return redis.get("event-" + id)
     elif request.method == "POST":
-        return "Event: " + id
+        redis.set("event-" + id, request.get_data())
     else:
         return {}, 400
 
@@ -57,9 +57,9 @@ def rotas():
 @app.route(root + "/rotas/<id>", methods=["GET", "POST"])
 def rota(id):
     if request.method == "GET":
-        return "Rota: " + id
+        return redis.get("rota-" + id)
     elif request.method == "POST":
-        return "Rota: " + id
+        redis.set("rota-" + id, request.get_data())
     else:
         return {}, 400
 
@@ -81,8 +81,8 @@ def people():
 @app.route(root + "/people/<id>", methods=["GET", "POST"])
 def person(id):
     if request.method == "GET":
-        return "Person: " + id
+        return redis.get("person-" + id)
     elif request.method == "POST":
-        return "Person: " + id
+        redis.set("person-" + id, request.get_data())
     else:
         return {}, 400
