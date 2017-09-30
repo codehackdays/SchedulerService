@@ -19,16 +19,24 @@ def ping():
 
 ### Events
 
+
 # ALL
-@app.route(root + "/events", methods=["GET", "POST"])
+@app.route(root + "/events", methods=["GET", "POST", "DELETE"])
 def events():
     if request.method == "GET":
-        return "Event: List"
+        # return "List of all Events"
+        all_events = ''
+        for keys in redis.scan_iter("event-*"):
+            all_events += str(redis.get(keys))
+        return Response(all_events, status=200)
     elif request.method == "POST":
         body = json.loads(request.get_data())
         for body_event in body["events"]:
             redis.set("event-" + body_event["id"], body_event)
         return Response("OK", status=200)
+    elif request.method == "DELETE":
+        redis.flushall()
+        return Response("Events Deleted", status=200)
     else:
         return Response("Invalid Method", status=400)
 
@@ -51,7 +59,12 @@ def event(id):
 @app.route(root + "/rotas", methods=["GET", "POST"])
 def rotas():
     if request.method == "GET":
-        return "Rota: List"
+        # return "List of all Events"
+        all_rotas = []
+        for key in redis.scan_iter("event-*"):
+            rota = redis.get(key)
+            all_rotas.append({ rotas: rota })
+        return Response(all_rotas, status=200)
     elif request.method == "POST":
         body = json.loads(request.get_data())
         for body_rota in body["rotas"]:
