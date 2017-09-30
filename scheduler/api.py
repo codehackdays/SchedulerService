@@ -33,9 +33,7 @@ def ping():
 def events():
     if request.method == "GET":
         # return "List of all Events"
-        all_events = ''
-        for key in redis.scan_iter("event-*"):
-            all_events += str(redis.get(key))
+        all_events = json.dumps([eval(redis.get(key).decode('utf8')) for key in redis.scan_iter("event-*")])
         return Response(all_events, status=200)
     elif request.method == "POST":
         body = json.loads(request.get_data())
