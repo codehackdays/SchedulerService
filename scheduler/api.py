@@ -34,13 +34,13 @@ def events():
     if request.method == "GET":
         # return "List of all Events"
         all_events = ''
-        for keys in redis.scan_iter("event-*"):
-            all_events += str(redis.get(keys))
+        for key in redis.scan_iter("event-*"):
+            all_events += str(redis.get(key))
         return Response(all_events, status=200)
     elif request.method == "POST":
         body = json.loads(request.get_data())
         for body_event in body["events"]:
-            redis.set("event-" + body_event["id"], body_event)
+            redis.set("event-" + body_event["id"], json.dumps(body_event))
         return Response("OK", status=200)
     elif request.method == "DELETE":
         redis.flushall()
@@ -68,11 +68,11 @@ def event(id):
 def rotas():
     if request.method == "GET":
         # return "List of all Events"
+        all_events = [eval(redis.get(key).decode('utf8')) for key in redis.scan_iter("event-*")]
         all_rotas = []
-        for key in redis.scan_iter("event-*"):
-            rota = redis.get(key)
-            all_rotas.append({ rotas: rota })
-        return Response(all_rotas, status=200)
+        for event in all_events:
+            all_rotas.append({"rotas": event['rotas']})
+        return Response(json.dumps(all_rotas), status=200)
     elif request.method == "POST":
         body = json.loads(request.get_data())
         for body_rota in body["rotas"]:
