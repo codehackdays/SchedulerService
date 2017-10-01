@@ -13,7 +13,6 @@ app = Flask(__name__)
 app.secret_key = str(uuid.uuid4())
 redis = Redis(host='redis', port=6379)
 root = "/api/1.0"
-import json
 
 
 ### Health Checks
@@ -221,7 +220,7 @@ def google_sheets_subsheets_import(id, subsheet_id, http_auth):
         })
         h = httplib2.Http('.cache')
         (resp, content) = h.request(
-            'https://a472d6c9.ngrok.io/api/1.0/events',
+            'http://localhost:5000/api/1.0/events',
             'POST',
             body=body
         )
